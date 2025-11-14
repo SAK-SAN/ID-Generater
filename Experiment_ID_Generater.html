@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>実験者ID発行 (タイムスタンプ)</title>
+    <style>
+        body {
+            font-family: sans-serif;
+            display: grid;
+            place-items: center;
+            min-height: 100vh;
+            background-color: #f4f4f4;
+            margin: 0;
+        }
+        .container {
+            background: #fff;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        #id-display {
+            font-size: 1.2rem;
+            font-family: monospace;
+            padding: 0.5rem;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #eee;
+            user-select: all;
+            margin-bottom: 1rem;
+            min-width: 250px;
+            display: inline-block;
+        }
+        button {
+            font-size: 1rem;
+            padding: 0.75rem 1.25rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            margin: 0 0.5rem;
+        }
+        #copy-btn {
+            background-color: #007bff;
+            color: white;
+        }
+        #copy-btn:hover {
+            background-color: #0056b3;
+        }
+        #generate-btn {
+            background-color: #6c757d;
+            color: white;
+        }
+        #generate-btn:hover {
+            background-color: #5a6268;
+        }
+
+        /* ★変更点 1: 「次へ」ボタンのスタイルを追加 */
+        #next-btn {
+            display: inline-block;
+            text-decoration: none; /* リンクの下線を消す */
+            font-size: 1rem;
+            padding: 0.75rem 1.25rem;
+            border-radius: 4px;
+            background-color: #28a745; /* 次へ進むボタンの色 (緑) */
+            color: white;
+            transition: background-color 0.2s;
+            font-weight: bold;
+        }
+        #next-btn:hover {
+            background-color: #218838;
+        }
+
+        #message {
+            margin-top: 1rem;
+            color: green;
+            font-weight: bold;
+            height: 1.2em;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>実験者ID発行</h2>
+        
+        <div id="id-display"></div>
+        
+        <div>
+            <button id="copy-btn">IDをコピー</button>
+            <button id="generate-btn">新規発行</button>
+        </div>
+        
+        <div id="next-step-container" style="display: none; margin-top: 1.5rem;">
+
+            <!--ここのコメントもgoogle formで事前アンケートを行うか否か-->
+            <!--
+            <a href="" id="next-btn">事前アンケートを開始する</a>                        
+        -->            
+            <a href="https://docs.google.com/forms/d/e/1FAIpQLSdvJvXhqLI7Sm7eYfA3WoxsdsKJRaWvB_lS5KRkkYqMjLUiNQ/viewform?usp=publish-editor" id="next-btn">事前アンケートを開始する</a>
+        
+        </div>
+        
+        <p id="message"></p>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // HTMLの要素を取得
+            const idDisplay = document.getElementById('id-display');
+            const copyBtn = document.getElementById('copy-btn');
+            const generateBtn = document.getElementById('generate-btn');
+            const messageEl = document.getElementById('message');
+            // ★変更点 3: 「次へ」ボタンのコンテナを取得
+            const nextStepContainer = document.getElementById('next-step-container');
+
+            /**
+             * 新しい実験者IDを生成する関数 (ミリ秒タイムスタンプ)
+             */
+            function generateNewId() {
+                const timestamp = Date.now();
+                return String(timestamp);
+            }
+
+            /**
+             * IDを画面に表示する関数
+             */
+            function displayNewId() {
+                idDisplay.textContent = generateNewId();
+                messageEl.textContent = ''; // メッセージをリセット
+                // ★変更点 4: 新規発行時は「次へ」ボタンを隠す
+                nextStepContainer.style.display = 'none';
+            }
+
+            // --- イベントリスナーの設定 ---
+
+            // 1. 「新規発行」ボタンが押されたとき
+            generateBtn.addEventListener('click', displayNewId);
+
+            // 2. 「コピー」ボタンが押されたとき
+            copyBtn.addEventListener('click', () => {
+                const idToCopy = idDisplay.textContent;
+                if (!idToCopy) return;
+
+                // クリップボードへのコピー
+                navigator.clipboard.writeText(idToCopy)
+                    .then(() => {
+                        // ★★★ここがご依頼の変更箇所です★★★
+                        // 成功時
+                        messageEl.textContent = 'コピーしました！';
+                        
+                        // 「次へ」ボタンを表示する
+                        nextStepContainer.style.display = 'block';
+                        // ★★★ここまで★★★
+                    })
+                    .catch(err => {
+                        // 失敗時
+                        messageEl.textContent = 'コピーに失敗しました。';
+                        console.error('Clipboard copy failed: ', err);
+                        
+                        // 失敗時は「次へ」ボタンを隠しておく
+                        nextStepContainer.style.display = 'none';
+                    });
+            });
+
+            // --- 初期化 ---
+            // ページが読み込まれたら、すぐに最初のIDを発行する
+            displayNewId();
+        });
+    </script>
+</body>
+</html>
